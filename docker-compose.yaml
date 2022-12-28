@@ -1,0 +1,71 @@
+version: "3.9"
+
+services:
+    data-source:
+        build:
+            context: .
+            dockerfile: ./data-source/Dockerfile
+        env_file:
+            - ./data-source/.env
+        expose:
+            - 5000/tcp
+        tty: true
+        command: yarn start
+        networks:
+            default:
+                ipv4_address: 172.16.200.2
+
+    mongo:
+        image: mongo
+        restart: always
+        volumes:
+            - mongo_data:/data/db
+        env_file:
+            - ./mongo/.env
+        networks:
+            default:
+                ipv4_address: 172.16.200.3
+
+    gateway:
+        build:
+            context: .
+            dockerfile: ./gateway/Dockerfile
+        env_file:
+            - ./gateway/.env
+        depends_on:
+            mongo:
+                condition: service_started
+        tty: true
+        command: yarn start
+        networks:
+            default:
+                ipv4_address: 172.16.200.4
+
+    web-app:
+        build:
+            context: .
+            dockerfile: ./web-app/Dockerfile
+        environment:
+            - NEXT_PUBLIC_BACKEND=http://172.16.200.4:3000
+        tty: true
+        entrypoint: [ "/bin/sh", "-c" ]
+        command:
+            - |
+                yarn build
+                yarn start
+        networks:
+            default:
+                ipv4_address: 172.16.200.5
+
+volumes:
+    mongo_data:
+
+networks:
+    default:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                -
+                    subnet: 172.16.200.0/24
+                    gateway: 172.16.200.1

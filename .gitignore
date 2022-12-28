@@ -1,2 +1,9 @@
 # idea
 .idea
+
+# dotenv
+**/.env.prod
+**/.env.local
+
+# docker-compose override
+docker-compose.override.yaml
