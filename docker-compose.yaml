@@ -9,7 +9,6 @@ services:
             - ./data-source/.env
         expose:
             - 5000/tcp
-        tty: true
         command: yarn start
         networks:
             default:
@@ -35,7 +34,6 @@ services:
         depends_on:
             mongo:
                 condition: service_started
-        tty: true
         command: yarn start
         networks:
             default:
@@ -47,7 +45,6 @@ services:
             dockerfile: ./web-app/Dockerfile
         environment:
             - NEXT_PUBLIC_BACKEND=http://172.16.200.4:3000
-        tty: true
         entrypoint: [ "/bin/sh", "-c" ]
         command:
             - |
