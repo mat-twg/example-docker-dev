@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
     data-source:
+        container_name: data-source
         build:
             context: .
             dockerfile: ./data-source/Dockerfile
@@ -12,6 +13,7 @@ services:
         command: yarn start
 
     mongo:
+        container_name: mongo
         image: mongo
         restart: always
         volumes:
@@ -20,28 +22,29 @@ services:
             - ./mongo/.env
 
     gateway:
-        hostname: gateway
+        container_name: gateway
         build:
             context: .
             dockerfile: ./gateway/Dockerfile
         env_file:
             - ./gateway/.env
         ports:
-            - "8001:3000"
+            - ${API_GATEWAY_PORT:-8001}:3000
         depends_on:
             mongo:
                 condition: service_started
         command: yarn start
 
     web-app:
+        container_name: web-app
         build:
             context: .
             dockerfile: ./web-app/Dockerfile
         environment:
             - NEXT_PRIVATE_API=http://gateway:3000
-            - NEXT_PUBLIC_API=http://localhost:8001
+            - NEXT_PUBLIC_API=http://localhost:${API_GATEWAY_PORT:-8001}
         ports:
-            - "8000:3000"
+            - ${WEB_APP_PORT:-8000}:3000
         entrypoint: [ "/bin/sh", "-c" ]
         command:
             - |
