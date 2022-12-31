@@ -10,9 +10,6 @@ services:
         expose:
             - 5000/tcp
         command: yarn start
-        networks:
-            default:
-                ipv4_address: 172.16.200.2
 
     mongo:
         image: mongo
@@ -21,48 +18,35 @@ services:
             - mongo_data:/data/db
         env_file:
             - ./mongo/.env
-        networks:
-            default:
-                ipv4_address: 172.16.200.3
 
     gateway:
+        hostname: gateway
         build:
             context: .
             dockerfile: ./gateway/Dockerfile
         env_file:
             - ./gateway/.env
+        ports:
+            - "8001:3000"
         depends_on:
             mongo:
                 condition: service_started
         command: yarn start
-        networks:
-            default:
-                ipv4_address: 172.16.200.4
 
     web-app:
         build:
             context: .
             dockerfile: ./web-app/Dockerfile
         environment:
-            - NEXT_PUBLIC_BACKEND=http://172.16.200.4:3000
+            - NEXT_PRIVATE_API=http://gateway:3000
+            - NEXT_PUBLIC_API=http://localhost:8001
+        ports:
+            - "8000:3000"
         entrypoint: [ "/bin/sh", "-c" ]
         command:
             - |
                 yarn build
                 yarn start
-        networks:
-            default:
-                ipv4_address: 172.16.200.5
 
 volumes:
     mongo_data:
-
-networks:
-    default:
-        driver: bridge
-        ipam:
-            driver: default
-            config:
-                -
-                    subnet: 172.16.200.0/24
-                    gateway: 172.16.200.1
