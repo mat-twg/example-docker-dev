@@ -40,6 +40,9 @@ services:
         build:
             context: .
             dockerfile: ./web-app/Dockerfile
+        depends_on:
+            gateway:
+                condition: service_started
         environment:
             - NEXT_PRIVATE_API=http://gateway:3000
             - NEXT_PUBLIC_API=http://localhost:${API_GATEWAY_PORT:-8001}
