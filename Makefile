@@ -3,7 +3,7 @@ ENV=./.env
 include $(ENV)
 
 # Executables (local)
-DOCKER_COMP = docker-compose
+DOCKER_COMP = docker compose
 
 # Env override
 ifneq ("$(wildcard ./.env.local)","")
